@@ -3,14 +3,18 @@ DOCKER_COMPOSE ?= docker compose
 .PHONY: setup build up down restart logs artisan npm clean quality
 
 setup:
-	@echo "==> First-time setup: composer/npm install, key generation, sqlite creation, migrations, docker build"
-	@cp -n .env.example .env
-	composer install --prefer-dist --no-interaction
-	npm install
-	php artisan key:generate --ansi
-	php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
-	php artisan migrate --force
-	$(DOCKER_COMPOSE) build
+	@echo "==> First-time setup: building and starting containers"
+	@[ -f .env ] || cp .env.example .env
+	$(MAKE) build
+	$(MAKE) up
+	$(DOCKER_COMPOSE) exec app composer install --no-interaction
+	$(DOCKER_COMPOSE) exec app php artisan key:generate --no-interaction
+	$(DOCKER_COMPOSE) exec app php artisan migrate --no-interaction
+	$(DOCKER_COMPOSE) exec frontend npm install
+	$(DOCKER_COMPOSE) exec frontend npm run build
+	@echo ""
+	@echo "Setup complete! App running at http://localhost:$${APP_PORT:-8001}"
+	@echo "Mailpit UI at http://localhost:$${FORWARD_MAILPIT_PORT:-8025}"
 
 build:
 	@echo "==> docker compose build"
