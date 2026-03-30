@@ -93,7 +93,7 @@ jobs:
           php artisan key:generate --ansi
           php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
       - name: Run Larastan
-        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
+        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress --debug
 
   pint:
     name: Laravel Pint
