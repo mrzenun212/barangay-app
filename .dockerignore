@@ -1,0 +1,9 @@
+.git
+node_modules
+vendor
+storage/*.key
+.env
+.env.*
+.DS_Store
+npm-debug.log
+yarn-error.log

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, bcmath, zip, pdo_mysql, pcntl, redis
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run npm lint
+        run: npm run lint
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run composer audit
+        run: composer audit --no-interaction
+
+      - name: Run Larastan (PHPStan)
+        run: vendor/bin/phpstan analyse
+
+      - name: Run Laravel Pint
+        run: vendor/bin/pint -- --no-progress
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
