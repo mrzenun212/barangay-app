@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
@@ -11,8 +11,13 @@ class ExampleTest extends TestCase
      */
     public function test_application_name_is_string(): void
     {
-        $value = config('app.name');
+        $value = $this->app->make('config')->get('app.name');
 
         $this->assertIsString($value);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
     }
 }
