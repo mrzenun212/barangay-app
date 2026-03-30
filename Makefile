@@ -1,6 +1,6 @@
 DOCKER_COMPOSE ?= docker compose
 
-.PHONY: setup build up down restart logs artisan npm clean
+.PHONY: setup build up down restart logs artisan npm clean quality
 
 setup:
 	@echo "==> First-time setup: composer/npm install, key generation, sqlite creation, migrations, docker build"
@@ -39,3 +39,12 @@ npm:
 clean:
 	@echo "==> Removing node_modules and vendor"
 	rm -rf node_modules vendor
+
+quality:
+	@echo "==> Running local quality checks (lint/audits/phpstan/pint/phpunit)"
+	npm run lint
+	npm audit --audit-level=moderate || true
+	composer audit --no-interaction || true
+	vendor/bin/phpstan analyse --memory-limit=512M --no-progress --debug
+	vendor/bin/pint -- --no-progress
+	vendor/bin/phpunit
